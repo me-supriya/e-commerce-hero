@@ -23,7 +23,7 @@ const AddProduct = () => {
   })
 
   const { user, token } = isAuthenticated()
-  console.log(user)
+
   const {
     name,
     description,

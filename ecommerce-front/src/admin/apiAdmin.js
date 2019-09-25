@@ -73,3 +73,43 @@ export const getCoupon = ({ code }) => {
     })
     .catch(err => console.log(err))
 }
+
+export const getUserBalance = ({ userId }) => {
+  return fetch(`${API}/wallet/balance/${userId}`, {
+    method: 'GET'
+  })
+    .then(response => {
+      return response.json()
+    })
+    .catch(err => console.log(err))
+}
+
+export const addUserWallet = payload => {
+  return fetch(`${API}/wallet/add/${payload.userId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${payload.token}`
+    },
+    body: JSON.stringify(payload.wallet)
+  })
+    .then(response => {
+      return response.json()
+    })
+    .catch(err => console.log(err))
+}
+
+export const deductUserWallet = payload => {
+  return fetch(`${API}/wallet/deduct/${payload.userId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${payload.token}`
+    },
+    body: JSON.stringify(payload.wallet)
+  })
+    .then(response => {
+      return response.json()
+    })
+    .catch(err => console.log(err))
+}

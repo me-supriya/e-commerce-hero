@@ -14,6 +14,7 @@ const categoryRoutes = require('./routes/category')
 const couponRoutes = require('./routes/coupon')
 const productRoutes = require('./routes/product')
 const walletRoutes = require('./routes/wallet')
+const paymentRoutes = require('./routes/payment')
 
 //App
 const app = express()
@@ -48,6 +49,7 @@ app.use('/api', categoryRoutes)
 app.use('/api', couponRoutes)
 app.use('/api', productRoutes)
 app.use('/api', walletRoutes)
+app.use('/api', paymentRoutes)
 
 const port = process.env.PORT || 8000
 

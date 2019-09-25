@@ -6,8 +6,10 @@ import { getCoupon } from '../admin/apiAdmin'
 import { FaAmazonPay } from 'react-icons/fa'
 import { razorpay } from '../config'
 import { razorPayOptions } from './checkout.helper'
+import { getUserBalance, deductUserWallet } from '../admin/apiAdmin'
+let { user, token } = isAuthenticated()
+
 const Razorpay = window.Razorpay
-const { user, token } = isAuthenticated()
 
 const Checkout = ({ products }) => {
   const [values, setValues] = useState({
@@ -40,10 +42,46 @@ const Checkout = ({ products }) => {
     }, 0)
   }
 
+  const walletDeduct = async event => {
+    event.preventDefault()
+    // total amount to be paid for order
+    let amount = applied ? getTotal() - productTax - discount : getTotal() - productTax
+    // deducting balance from user wallet
+    const deductUserBalance = await deductUserWallet({ token, userId: user._id, wallet: { amount: amount } })
+
+    // if dedcuted get the current balance
+    if (deductUserBalance.success) {
+      const currentBalance = await getUserBalance({ userId: user._id })
+      if (currentBalance.success) {
+        user.wallet_balance = currentBalance.user.wallet_balance
+      }
+    }
+  }
+
+  const walletCheckout = () => {
+    return (
+      <div>
+        <button onClick={walletDeduct} className="btn btn-raised btn-success">
+          Pay using Wallet{' '}
+        </button>
+        <br />
+        <span>
+          Wallet balance Rs. <b>{user.wallet_balance}</b>
+        </span>
+      </div>
+    )
+  }
+
   const showCheckout = () => {
     return isAuthenticated() ? (
-      <button className="btn btn-raised btn-success">Pay Now</button>
+      <div>
+        <button onClick={openRzrPay} className="btn btn-raised btn-success" id="rzp-button1">
+          Pay Now
+        </button>
+        {user && user.wallet_balance > 0 ? walletCheckout() : ''}
+      </div>
     ) : (
+      // <button className="btn btn-raised btn-success">Pay Now</button>
       <Link to="/signin">
         <button className="btn btn-raised btn-warning">Sign in to checkout</button>
       </Link>
@@ -51,9 +89,11 @@ const Checkout = ({ products }) => {
   }
 
   // Razorpay
-
   const rzp1 = new Razorpay(
-    razorPayOptions(applied ? getTotal() - productTax - discount : getTotal() - productTax, user)
+    razorPayOptions(
+      applied ? getTotal() - productTax - discount : getTotal() - productTax,
+      user && user.name && user.email ? { ...user, token } : { name: '', email: '' }
+    )
   )
   const openRzrPay = event => {
     rzp1.open()
@@ -85,9 +125,6 @@ const Checkout = ({ products }) => {
                   />
                 </a>
               </p>
-              <button onClick={openRzrPay} className="btn btn-raised btn-success" id="rzp-button1">
-                Pay
-              </button>
 
               <div className="collapse" id="collapseExample">
                 <div className="card card-body">
